@@ -1,0 +1,19 @@
+﻿<a href="#" ng-click="btnAgregarUsuario()" class="waves-effect waves-light btn light-green darken-4"><i class="material-icons left">add_circle_outline</i>Agregar usuario</a>
+<a href="#" ng-click="btnBorrarUsuarios()" class="waves-effect waves-light btn #b71c1c red darken-4"><i class="material-icons left">delete_forever</i>Borrar usuarios</a>
+<a href="#" class="waves-effect waves-light btn grey darken-4">
+    <i class="material-icons left" ng-class="online ? 'light-green-text text-accent-4' : 'red-text text-accent-4'">
+      {{ online ? 'network_wifi' : 'signal_wifi_off' }}
+    </i>
+    {{ online ? 'SERVER: ' + IP : 'Modo: Offline' }}
+</a>
+
+<ul class="collection">
+    <li class="collection-item" ng-repeat="u in usuarios">
+        <p>
+            <i class="material-icons left">account_circle</i> {{ u.nombre }}
+        </p>
+        <p>
+            <i class="material-icons left">vpn_key</i> {{ u.clave }}
+        </p>
+    </li>
+</ul>

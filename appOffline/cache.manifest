@@ -1,0 +1,78 @@
+﻿CACHE MANIFEST
+#################################################################################
+#							Version: 2016.05.10 - v1.0.0					#
+#################################################################################
+
+#################################################################################
+#						Archivos que se guardaran en cache.						#
+#################################################################################
+CACHE:
+
+# CSS
+css/materialize.clockpicker.css
+css/materialize.min.css
+fonts/MaterialIcons/material-icons.css
+
+# JS
+js/angular-materialize.js
+js/angular-ui-router.min.js
+js/angular-websql.min.js
+js/angular.min.js
+js/jquery-2.2.3.min.js
+js/materialize.min.js
+
+# FONTS
+fonts/MaterialIcons/MaterialIcons-Regular.eot
+fonts/MaterialIcons/MaterialIcons-Regular.svg
+fonts/MaterialIcons/MaterialIcons-Regular.ttf
+fonts/MaterialIcons/MaterialIcons-Regular.woff
+#fonts/MaterialIcons/MaterialIcons-Regular.woff2
+fonts/roboto/Roboto-Bold.eot
+fonts/roboto/Roboto-Bold.ttf
+fonts/roboto/Roboto-Bold.woff
+#fonts/roboto/Roboto-Bold.woff2
+fonts/roboto/Roboto-Light.eot
+fonts/roboto/Roboto-Light.ttf
+fonts/roboto/Roboto-Light.woff
+#fonts/roboto/Roboto-Light.woff2
+fonts/roboto/Roboto-Medium.eot
+fonts/roboto/Roboto-Medium.ttf
+fonts/roboto/Roboto-Medium.woff
+#fonts/roboto/Roboto-Medium.woff2
+fonts/roboto/Roboto-Regular.eot
+fonts/roboto/Roboto-Regular.ttf
+fonts/roboto/Roboto-Regular.woff
+#fonts/roboto/Roboto-Regular.woff2
+fonts/roboto/Roboto-Thin.eot
+fonts/roboto/Roboto-Thin.ttf
+fonts/roboto/Roboto-Thin.woff
+#fonts/roboto/Roboto-Thin.woff2
+
+# IMG
+
+# APP
+favicon.ico
+
+index.html
+
+app/app.js
+
+app/commons/dbConfigProvider.js
+app/commons/interceptorFactory.js
+app/commons/onlineFactory.js
+
+app/inicio/inicio.html
+app/inicio/inicioCtrl.js
+app/inicio/usuarioFactory.js
+
+#################################################################################
+#		Recursos que se tomaran de la red. El comodin '*' actualiza todo.		#
+#################################################################################
+
+NETWORK:
+# Actualiza todos los recursos
+*
+
+# En caso de que no se haya guardado el recurso, mostrara lo siguiente.
+FALLBACK:
+# No se han asignado recursos.

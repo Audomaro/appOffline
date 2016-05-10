@@ -1,0 +1,68 @@
+﻿<!DOCTYPE html>
+<!--<html xmlns="http://www.w3.org/1999/xhtml">-->
+<html xmlns="http://www.w3.org/1999/xhtml" manifest="cache.manifest">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title></title>
+    <link href="css/materialize.min.css" rel="stylesheet" />
+    <link href="css/materialize.clockpicker.css" rel="stylesheet" />
+    <link href="fonts/MaterialIcons/material-icons.css" rel="stylesheet" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+</head>
+<body ng-app="app">
+
+    <!-- Navbar -->
+    <div class="navbar-fixed">
+        <nav>
+            <div class="nav-wrapper grey darken-4">
+                <a href="#!" class="brand-logo">Logo</a>
+                <ul class="right hide-on-med-and-down">
+                    <li><a href="#"><i class="material-icons">search</i></a></li>
+                    <li><a href="#"><i class="material-icons">view_module</i></a></li>
+                    <li><a href="#"><i class="material-icons">refresh</i></a></li>
+                    <li><a href="#"><i class="material-icons">more_vert</i></a></li>
+                    <!--<li>
+                        <a href="#">
+                            <i class="material-icons left" ng-class="online ? 'light-green-text text-accent-4' : 'red-text text-accent-4'">
+                                {{ online ? 'network_wifi' : 'signal_wifi_off' }}
+                            </i>
+                        </a>
+                    </li>-->
+                </ul>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Vistas -->
+    <div style="padding: 20px;">
+        <ui-view></ui-view>
+    </div>
+
+    <!----------------------------- JS ----------------------------->
+    <!-- Librerias -->
+    <script src="js/jquery-2.2.3.min.js"></script>
+    <script src="js/materialize.min.js"></script>
+    <script src="js/angular.min.js"></script>
+
+    <!-- complementos angular -->
+    <script src="js/angular-ui-router.min.js"></script>
+    <script src="js/angular-materialize.js"></script>
+    <script src="js/angular-websql.min.js"></script>
+
+    <!-- Aplicacion -->
+    <script src="app/app.js"></script>
+
+    <script src="app/commons/interceptorFactory.js"></script>
+    <script src="app/commons/onlineFactory.js"></script>
+    <script src="app/commons/dbConfigProvider.js"></script>
+
+    <script src="app/inicio/inicioCtrl.js"></script>
+    <script src="app/inicio/usuarioFactory.js"></script>
+
+</body>
+</html>
