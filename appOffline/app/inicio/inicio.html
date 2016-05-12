@@ -1,3 +1,4 @@
+﻿
 <a href="#" ng-click="btnBorrarUsuarios()" class="waves-effect waves-light btn #b71c1c red darken-4"><i class="material-icons left">delete_forever</i>Borrar usuarios</a>
 <a href="#" class="waves-effect waves-light btn grey darken-4">
     <i class="material-icons left" ng-class="online ? 'light-green-text text-accent-4' : 'red-text text-accent-4'">
@@ -29,7 +30,33 @@
     <a href="#" ng-click="btnAgregarUsuario()" class="waves-effect waves-light btn light-green darken-4"><i class="material-icons left">add_circle_outline</i>Agregar usuario</a>
 </div>
 
-<ul class="collection with-header">
+<table>
+    <thead>
+        <tr>
+            <th data-field="nombre">Nombre</th>
+            <th data-field="clave">Clave</th>
+            <th data-field="departamento">Departamento</th>
+            <th data-field="altaLog">Alta</th>
+            <th data-field="modiLog">Modificación</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <tr ng-repeat="u in usuarios">
+            <td>{{ u.nombre }}</td>
+            <td>{{ u.nombre }}</td>
+            <td>{{ u.nombre }}</td>
+            <td>{{ u.nombre }}</td>
+            <td>{{ u.nombre }}</td>
+            <td style="padding: 0">
+                <a class="waves-effect btn light-blue"><i class="material-icons ">mode_edit</i></a>
+            </td>
+        </tr>
+       
+    </tbody>
+</table>
+
+<!--<ul class="collection with-header">
     <li class="collection-header"><h4>Usuarios</h4></li>
     <li class="collection-item" ng-repeat="u in usuarios">
         <div class="row">
@@ -44,4 +71,4 @@
             </div>
         </div>
     </li>
-</ul>
+</ul>-->

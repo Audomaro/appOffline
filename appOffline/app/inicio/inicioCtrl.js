@@ -2,13 +2,13 @@
  * @author              Audomaro Glez.
  * @description         Controlador de la página de inicio.
  * @createDate          2016.05.09
- * @lastmodifiedDate    2016.05.10
+ * @lastmodifiedDate    2016.05.12
  */
 (function () {
     'use strict';
     angular
         .module('app')
-        .controller('inicioCtrl', ['$scope', '$rootScope', '$q', '$interval', 'usuariosFactory', 'onlineFactory', function ($scope, $rootScope, $q, $interval, usuariosFactory, onlineFactory) {
+        .controller('inicioCtrl', ['$scope', '$rootScope', '$q', '$timeout', 'usuariosFactory', 'onlineFactory', function ($scope, $rootScope, $q, $timeout, usuariosFactory, onlineFactory) {
 
             // #region Checar conexión.
             $scope.online = $rootScope.online;
@@ -47,28 +47,8 @@
                     });
             }
 
-            function getAPI() {
-                usuariosFactory
-                  .listaUsuariosWebApi()
-                  .then(function (res) {
-                      angular.forEach(res, function (value, key) {
-                          // $scope.usuarios.push(value);
-                          usuariosFactory
-                              .buscarUsuario(value.id)
-                                  .then(function (results) {
-                                      if (results.rows.length === 0) {
-                                          usuariosFactory.agregarUsuario(value);
-                                      }
-                                  });
-                      });
-                  });
-
-            }
-
-            getAPI();
-
             getUsers();
-
+           
             /**
              * Boton para agregar un nuevo usuario de forma dinamica.
              */

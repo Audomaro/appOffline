@@ -2,7 +2,7 @@
  * @author              Audomaro Glez.
  * @description         Factoria para la manipulación de los datos de usuarios.
  * @createDate          2016.05.09
- * @lastmodifiedDate    2016.05.10
+ * @lastmodifiedDate    2016.05.12
  */
 (function () {
     'use strict';
@@ -41,40 +41,44 @@
 
             // #region Funciones publicas (Datos desde WEBAPI)
             factory.listaUsuariosWebApi = function () {
-                var deferred = $q.defer();
-                if ($rootScope.online) {
-                    $http.get(WEBAPI + 'usuarios').then(function (res) {
-                        if (res.data !== null) {
-                            deferred.resolve(res.data);
-                        } else {
-                            deferred.resolve([]);
+                //console.log('1. Llamada listaUsuariosWebApi');
+                $http.get(WEBAPI + 'usuarios')
+                    .then(function (res) {
+                        //console.log('2. Hay respuesta. ', res);
+                        var cUsuario;
+                        if (res.status !== -1 && res.data !== null && Array.isArray(res.data)) {
+                            //console.log('3. Hay datos, empieza a guardarlos en websql.');
+                            //console.log('4. Guardados.');
+                            for(cUsuario of res.data) {
+                                existe(cUsuario.id).then(function (res) {
+                                    console.log('El usuario existe: ', res);
+                                    if (!res) {
+                                        dbConfig.dbUse().insert('usuarios', cUsuario)
+                                            .then(function (res) {
+                                                console.log('Hecho: ', res);
+                                            });
+                                    }
+                                });
+                               
+                            }
                         }
-                    }, function () {
-                        deferred.reject([]);
                     });
-                } else {
-                    deferred.reject([]);
-                }
-
-                return deferred.promise
-                // #region 
-                /*var deferred = $q.defer();
-                if ($rootScope.online) {
-                    $http.get(WEBAPI + 'usuarios').then(function (res) {
-                        if (res.data !== null) {
-                            deferred.resolve(res.data);
-                        } else {
-                            deferred.resolve([]);
-                        }
-                    }, function () {
-                        deferred.resolve([]);
-                    });
-                } else {
-                    deferred.resolve([]);
-                }
-                return deferred.promise;*/
-                // #endregion
             };
+
+            function existe(id) {
+                let defer = $q.defer();
+                dbConfig
+                    .dbUse()
+                    .select('usuarios', { 'id': id })
+                    .then(function (results) {
+                        if (results.rows > 0) {
+                            defer.resolve(true);
+                        } else {
+                            defer.resolve(false);
+                        }
+                    });
+                return defer.promise;
+            }
             // #endregion
             
             // #region Funciones publicas (BD Interna)

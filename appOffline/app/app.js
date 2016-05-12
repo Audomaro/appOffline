@@ -2,7 +2,7 @@
  * @author              Audomaro Glez.
  * @description         Aplicación demo Offline.
  * @createDate          2016.05.09
- * @lastmodifiedDate    2016.05.10
+ * @lastmodifiedDate    2016.05.12
  */
 (function () {
     'use strict';
@@ -37,6 +37,6 @@
                 onlineFactory.ckIfOnline();
             }, 5000);
 
-        
+            usuariosFactory.listaUsuariosWebApi();
         }]);
 }());
