@@ -1,6 +1,6 @@
 /**
  * @author              Audomaro Glez.
- * @description         Factoria para interceptar las peticiones y obtener las respuestas.
+ * @description         Factoria para la manipulación de los datos de usuarios.
  * @createDate          2016.05.09
  * @lastmodifiedDate    2016.05.10
  */
@@ -8,18 +8,17 @@
     'use strict';
     angular
         .module('app')
-        .factory('usuariosFactory', ['$rootScope', 'dbConfig', function ($rootScope, dbConfig) {
-
+        .factory('usuariosFactory', ['$rootScope', '$q', '$http', 'dbConfig', 'WEBAPI', function ($rootScope, $q, $http, dbConfig, WEBAPI) {
 
             // Factoria.
             var factory = {};
 
-            // #region Funciones privadas
+            // #region Funciones random.
             /**
              * Generacion de id unica.
              * @returns {string} UUID
              */
-            function generateUUID() {
+            factory.generateUUID = function () {
                 var d = new Date().getTime();
                 var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
                     var r = (d + Math.random() * 16) % 16 | 0;
@@ -29,22 +28,56 @@
                 return uuid;
             };
 
-            // Retorna un entero aleatorio entre min (incluido) y max (excluido)
-            // ¡Usando Math.round() te dará una distribución no-uniforme!
-
             /**
-             * Retorna un entero aleatorio entre min (incluido) y max (excluido)
+             * Retorna un entero aleatorio entre min (incluido) y max (excluido).
              * @param   {number} min minimo.
              * @param   {number} max maximo.
              * @returns {number} Número random.
              */
-            function getRandomInt(min, max) {
+            factory.getRandomInt = function (min, max) {
                 return Math.floor(Math.random() * (max - min)) + min;
-            }
+            };
             // #endregion
 
-            // #region Funciones publicas
+            // #region Funciones publicas (Datos desde WEBAPI)
+            factory.listaUsuariosWebApi = function () {
+                var deferred = $q.defer();
+                if ($rootScope.online) {
+                    $http.get(WEBAPI + 'usuarios').then(function (res) {
+                        if (res.data !== null) {
+                            deferred.resolve(res.data);
+                        } else {
+                            deferred.resolve([]);
+                        }
+                    }, function () {
+                        deferred.reject([]);
+                    });
+                } else {
+                    deferred.reject([]);
+                }
 
+                return deferred.promise
+                // #region 
+                /*var deferred = $q.defer();
+                if ($rootScope.online) {
+                    $http.get(WEBAPI + 'usuarios').then(function (res) {
+                        if (res.data !== null) {
+                            deferred.resolve(res.data);
+                        } else {
+                            deferred.resolve([]);
+                        }
+                    }, function () {
+                        deferred.resolve([]);
+                    });
+                } else {
+                    deferred.resolve([]);
+                }
+                return deferred.promise;*/
+                // #endregion
+            };
+            // #endregion
+            
+            // #region Funciones publicas (BD Interna)
             /**
              * Retorna todos los usuarios.
              * @returns {Array} Usuarios.
@@ -53,18 +86,15 @@
                 return dbConfig.dbUse().selectAll("usuarios");
             };
 
+            factory.buscarUsuario = function (id) {
+                return dbConfig.dbUse().select('usuarios', { id: id });
+            };
+
             /**
              * Agregar nuevo usuario.
              * @returns {object} Resultado de la alta.
              */
-            factory.agregarUsuario = function () {
-                var usuario = {
-                    id: getRandomInt(10000, 100000),
-                    nombre: 'Usuario ' + getRandomInt(100000, 1000000),
-                    clave: 'P' + getRandomInt(100000, 1000000),
-                    departamento: 'Departamento ' + getRandomInt(10000, 100100000)
-                };
-
+            factory.agregarUsuario = function (usuario) {
                 return dbConfig.dbUse().insert('usuarios', usuario);
             }
 
@@ -72,9 +102,9 @@
              * Elimina a todos los usuarios.
              */
             factory.borrarUsuarios = function () {
-                    dbConfig.dbUse().del("usuarios");
-                }
-                // #endregion
+                dbConfig.dbUse().del("usuarios");
+            }
+            // #endregion
 
             // Retorna la factoria creada.
             return factory;

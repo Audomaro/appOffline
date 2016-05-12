@@ -8,15 +8,11 @@
     'use strict';
     angular
         .module('app')
-        .controller('inicioCtrl', ['$scope', '$rootScope', '$interval', 'usuariosFactory', 'onlineFactory', function ($scope, $rootScope, $interval, usuariosFactory, onlineFactory) {
+        .controller('inicioCtrl', ['$scope', '$rootScope', '$q', '$interval', 'usuariosFactory', 'onlineFactory', function ($scope, $rootScope, $q, $interval, usuariosFactory, onlineFactory) {
+
             // #region Checar conexión.
             $scope.online = $rootScope.online;
-            onlineFactory.ckIfOnline();
-
-            $interval(function () {
-                onlineFactory.ckIfOnline();
-            }, 5000);
-
+           
             $rootScope.$watch('online', function (newValue, oldValue) {
                 if (newValue !== oldValue) {
                     $scope.online = $rootScope.online;
@@ -25,9 +21,15 @@
             // #endregion
 
             // #region Otros
-            $scope.IP = location.host;  // IP del server.
-            $scope.usuarios = [];       // Lista de usuarios.
-            $scope.usersL = 0;          // Tamaño de la lista.
+            $scope.IP = location.host; // IP del server.
+            $scope.usuarios = []; // Lista de usuarios.
+            $scope.usersL = 0; // Tamaño de la lista.
+            $scope.usuario = {
+                id: '',
+                nombre: '',
+                clave: '',
+                departamento: ''
+            };
 
             /**
              * Obtiene la lista completa de todos los usuarios.
@@ -45,18 +47,49 @@
                     });
             }
 
-            // Llenado de la lista de usuarios.
+            function getAPI() {
+                usuariosFactory
+                  .listaUsuariosWebApi()
+                  .then(function (res) {
+                      angular.forEach(res, function (value, key) {
+                          // $scope.usuarios.push(value);
+                          usuariosFactory
+                              .buscarUsuario(value.id)
+                                  .then(function (results) {
+                                      if (results.rows.length === 0) {
+                                          usuariosFactory.agregarUsuario(value);
+                                      }
+                                  });
+                      });
+                  });
+
+            }
+
+            getAPI();
+
             getUsers();
 
             /**
              * Boton para agregar un nuevo usuario de forma dinamica.
              */
             $scope.btnAgregarUsuario = function () {
-                usuariosFactory
-                    .agregarUsuario()
-                    .then(function () {
-                        getUsers();
-                    });
+
+                if ($scope.usuario.nombre !== '' && $scope.usuario.clave !== '') {
+                    $scope.usuario.id = usuariosFactory.generateUUID();
+                    $scope.usuario.departamento = $scope.usuario.departamento === '' ? usuariosFactory.generateUUID() : $scope.usuario.departamento;
+
+                    usuariosFactory
+                        .agregarUsuario($scope.usuario)
+                        .then(function () {
+                            $scope.usuario.nombre = '';
+                            $scope.usuario.departamento = '';
+                            $scope.usuario.clave = '';
+                            $scope.usuario.departamento = '';
+                            getUsers();
+                        });
+                } else {
+                    Materialize.toast('Faltan datos!', 5000);
+                }
             };
 
             /**

@@ -8,6 +8,7 @@
     'use strict';
     angular
         .module('app', ['ui.router', 'ui.materialize', 'angular-websql'])
+        .constant('WEBAPI', 'http://localhost:56517/api/')
         .config(['$httpProvider', '$stateProvider', '$urlRouterProvider', 'dbConfigProvider', function ($httpProvider, $stateProvider, $urlRouterProvider, dbConfigProvider) {
             // Agrega el interceptor de peticiones a la aplicación.
             $httpProvider.interceptors.push('interceptorFactory');
@@ -26,8 +27,16 @@
             // Creacion de la BD.
             dbConfigProvider.dbSet('appOffline', 1);
         }])
-        .run(['dbConfig', function (dbConfig) {
+        .run(['dbConfig', 'onlineFactory', '$interval', 'usuariosFactory', function (dbConfig, onlineFactory, $interval, usuariosFactory) {
             // Crea la tabla de usurios.
             dbConfig.crearTblUsuario();
+
+            onlineFactory.ckIfOnline();
+
+            $interval(function () {
+                onlineFactory.ckIfOnline();
+            }, 5000);
+
+        
         }]);
 }());

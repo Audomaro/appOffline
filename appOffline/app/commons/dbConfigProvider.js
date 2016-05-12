@@ -59,6 +59,10 @@
                             "type": "TIMESTAMP",
                             "null": "NOT NULL",
                             "default": "CURRENT_TIMESTAMP"
+                        },
+                        "modiLog": {
+                            "type": "TIMESTAMP",
+                            "null": ""
                         }
                     });
                 };
