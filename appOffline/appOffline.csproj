@@ -67,6 +67,7 @@
     <Content Include="fonts\MaterialIcons\MaterialIcons-Regular.ttf" />
     <Content Include="fonts\MaterialIcons\MaterialIcons-Regular.woff" />
     <Content Include="fonts\MaterialIcons\MaterialIcons-Regular.woff2" />
+    <Content Include="_documentacion\BD.sql" />
     <None Include="Properties\PublishProfiles\appOffline.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

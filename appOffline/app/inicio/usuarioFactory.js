@@ -49,18 +49,31 @@
                         if (res.status !== -1 && res.data !== null && Array.isArray(res.data)) {
                             //console.log('3. Hay datos, empieza a guardarlos en websql.');
                             //console.log('4. Guardados.');
-                            for(cUsuario of res.data) {
-                                existe(cUsuario.id).then(function (res) {
-                                    console.log('El usuario existe: ', res);
-                                    if (!res) {
-                                        dbConfig.dbUse().insert('usuarios', cUsuario)
-                                            .then(function (res) {
-                                                console.log('Hecho: ', res);
-                                            });
-                                    }
-                                });
-                               
-                            }
+                            //for(cUsuario of res.data) {
+
+                            angular.forEach(res.data, function (value, key) {
+                                dbConfig
+                                    .dbUse()
+                                    .insert('usuarios', value)
+                                    .then(function (res) {
+                                        console.log('Insertado.')
+                                    }, function () {
+                                            dbConfig
+                                                .dbUse()
+                                                .update('usuarios', {
+                                                    "nombre": value.nombre,
+                                                    "clave": value.clave,
+                                                    "departamento": value.departamento,
+                                                    "modiLog": value.modiLog
+                                                }, {
+                                                    "id": value.id
+                                                })
+                                                .then(function (res) {
+                                                    console.log('Actualizado: ');
+                                                    console.log(value);
+                                                });
+                                    });
+                            });
                         }
                     });
             };
@@ -80,7 +93,7 @@
                 return defer.promise;
             }
             // #endregion
-            
+
             // #region Funciones publicas (BD Interna)
             /**
              * Retorna todos los usuarios.

@@ -35,7 +35,8 @@
              * Obtiene la lista completa de todos los usuarios.
              */
             function getUsers() {
-                usuariosFactory
+                $timeout(function () {
+                    usuariosFactory
                     .listarTodos()
                     .then(function (results) {
                         var i;
@@ -45,6 +46,7 @@
                         }
                         $scope.usersL = $scope.usuarios.length;
                     });
+                }, 100)
             }
 
             getUsers();

@@ -42,7 +42,8 @@
                     db.createTable('usuarios', {
                         "id": {
                             "type": "TEXT",
-                            "null": "NOT NULL"
+                            "null": "NOT NULL",
+                            "primary": true
                         },
                         "nombre": {
                             "type": "TEXT",
