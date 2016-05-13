@@ -27,7 +27,7 @@
             // Creacion de la BD.
             dbConfigProvider.dbSet('appOffline', 1);
         }])
-        .run(['dbConfig', 'onlineFactory', '$interval', 'usuariosFactory', function (dbConfig, onlineFactory, $interval, usuariosFactory) {
+        .run(['dbConfig', 'onlineFactory', '$interval', '$timeout', 'usuariosFactory', function (dbConfig, onlineFactory, $interval, $timeout, usuariosFactory) {
             // Crea la tabla de usurios.
             dbConfig.crearTblUsuario();
 
@@ -37,6 +37,5 @@
                 onlineFactory.ckIfOnline();
             }, 5000);
 
-            usuariosFactory.listaUsuariosWebApi();
         }]);
 }());

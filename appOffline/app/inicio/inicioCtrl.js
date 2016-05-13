@@ -12,7 +12,7 @@
 
             // #region Checar conexión.
             $scope.online = $rootScope.online;
-           
+
             $rootScope.$watch('online', function (newValue, oldValue) {
                 if (newValue !== oldValue) {
                     $scope.online = $rootScope.online;
@@ -35,20 +35,18 @@
              * Obtiene la lista completa de todos los usuarios.
              */
             function getUsers() {
-                usuariosFactory
-                    .listarTodos()
-                    .then(function (results) {
-                        var i;
-                        $scope.usuarios = [];
-                        for (i = 0; i < results.rows.length; i++) {
-                            $scope.usuarios.push(results.rows.item(i));
-                        }
-                        $scope.usersL = $scope.usuarios.length;
-                    });
+
+                usuariosFactory.listaUsuariosWebApi();
+
+                usuariosFactory.listarTodos().then(function (res) {
+                    console.log(res);
+                    $scope.usuarios = res;
+                });
             }
 
+
             getUsers();
-           
+
             /**
              * Boton para agregar un nuevo usuario de forma dinamica.
              */
@@ -59,13 +57,11 @@
                     $scope.usuario.departamento = $scope.usuario.departamento === '' ? usuariosFactory.generateUUID() : $scope.usuario.departamento;
 
                     usuariosFactory
-                        .agregarUsuario($scope.usuario)
-                        .then(function () {
-                            $scope.usuario.nombre = '';
-                            $scope.usuario.departamento = '';
-                            $scope.usuario.clave = '';
-                            $scope.usuario.departamento = '';
-                            getUsers();
+                        .agregar($scope.usuario)
+                        .then(function (res) {
+                            if (res) {
+                                getUsers();
+                            }
                         });
                 } else {
                     Materialize.toast('Faltan datos!', 5000);
@@ -76,8 +72,13 @@
              * Boton para eliminar a todos los usuarios.
              */
             $scope.btnBorrarUsuarios = function () {
-                usuariosFactory.borrarUsuarios();
-                getUsers();
+                usuariosFactory
+                    .eliminarTodos()
+                    .then(function (res) {
+                        if (res) {
+                            getUsers();
+                        }
+                    });
             };
             // #endregion
         }]);

@@ -39,46 +39,41 @@
             };
             // #endregion
 
+            function sleep(milliseconds) {
+                var start = new Date().getTime();
+                for (var i = 0; i < 1e7; i++) {
+                    if ((new Date().getTime() - start) > milliseconds) {
+                        break;
+                    }
+                }
+            }
+
             // #region Funciones publicas (Datos desde WEBAPI)
             factory.listaUsuariosWebApi = function () {
-                //console.log('1. Llamada listaUsuariosWebApi');
                 $http.get(WEBAPI + 'usuarios')
                     .then(function (res) {
-                        //console.log('2. Hay respuesta. ', res);
-                        var cUsuario;
+                        var usuario;
                         if (res.status !== -1 && res.data !== null && Array.isArray(res.data)) {
-                            //console.log('3. Hay datos, empieza a guardarlos en websql.');
-                            //console.log('4. Guardados.');
-                            for(cUsuario of res.data) {
-                                existe(cUsuario.id).then(function (res) {
-                                    console.log('El usuario existe: ', res);
-                                    if (!res) {
-                                        dbConfig.dbUse().insert('usuarios', cUsuario)
-                                            .then(function (res) {
-                                                console.log('Hecho: ', res);
-                                            });
-                                    }
-                                });
-                               
+                            for(usuario of res.data) {
+                                dbConfig
+                                    .dbUse()
+                                    .transaction(function (tx) {
+                                        tx.executeSql("SELECT id FROM usuarios WHERE id=?", [usuario.id], function (tx, results) {
+                                            if (results.rows.length === 0) {
+                                                console.log('no existe')
+                                                dbConfig.dbUse().transaction(function (tx) {
+                                                    tx.executeSql("INSERT INTO usuarios (id, nombre, clave, departamento) values (?, ?, ?, ?)", [usuario.id, usuario.nombre, usuario.clave, usuario.departamento]);
+                                                });
+                                            } else {
+                                                console.log('existe');
+                                            }
+                                        });
+                                    });
                             }
                         }
                     });
             };
 
-            function existe(id) {
-                let defer = $q.defer();
-                dbConfig
-                    .dbUse()
-                    .select('usuarios', { 'id': id })
-                    .then(function (results) {
-                        if (results.rows > 0) {
-                            defer.resolve(true);
-                        } else {
-                            defer.resolve(false);
-                        }
-                    });
-                return defer.promise;
-            }
             // #endregion
             
             // #region Funciones publicas (BD Interna)
@@ -87,30 +82,72 @@
              * @returns {Array} Usuarios.
              */
             factory.listarTodos = function () {
-                return dbConfig.dbUse().selectAll("usuarios");
-            };
+                let defer = $q.defer();
 
-            factory.buscarUsuario = function (id) {
-                return dbConfig.dbUse().select('usuarios', { id: id });
+                setTimeout(function () {
+                    dbConfig.dbUse().transaction(function (tx) {
+                        tx.executeSql("SELECT * FROM usuarios", [], function (tx, results) {
+                            let c, array = [];
+                            if (results.rows.length > 0) {
+                                for (c in results.rows) {
+                                    array.push(results.rows.item(c));
+                                }
+                                defer.resolve(array);
+                            } else {
+                                defer.resolve([]);
+                            }
+                        });
+                    });
+                });
+
+                return defer.promise;
             };
 
             /**
-             * Agregar nuevo usuario.
-             * @returns {object} Resultado de la alta.
+             * Agrega usuarios a la base de datos local.
+             * @param   {object}  usuario Datos del usuarios
+             * @returns {boolean} Indica si se inserto el dato.
              */
-            factory.agregarUsuario = function (usuario) {
-                return dbConfig.dbUse().insert('usuarios', usuario);
-            }
+            factory.agregar = function (usuario) {
+                let defer = $q.defer();
 
+                dbConfig.dbUse().transaction(function (tx) {
+                    tx.executeSql("INSERT INTO usuarios (id, nombre, clave, departamento) values (?, ?, ?, ?)", [usuario.id, usuario.nombre, usuario.clave, usuario.departamento],
+                        function (tx, results) {
+                            //console.log("Query Success: ", results);
+                            defer.resolve(true);
+                        },
+                        function (tx, error) {
+                            console.log("Query Error: " + error.message);
+                            defer.resolve(false);
+                        });
+                });
+
+                return defer.promise;
+            };
+           
             /**
-             * Elimina a todos los usuarios.
+             * 
              */
-            factory.borrarUsuarios = function () {
-                dbConfig.dbUse().del("usuarios");
+            factory.eliminarTodos = function(){
+                let defer = $q.defer();
+                
+                dbConfig.dbUse().transaction(function (tx) {
+                    tx.executeSql("DELETE FROM usuarios", [], function (tx, results) {
+                            defer.resolve(true);
+                        },
+                        function (tx, error) {
+                            console.log("Query Error: " + error.message);
+                            defer.resolve(false);
+                        });
+                });
+
+                return defer.promise;
             }
             // #endregion
 
             // Retorna la factoria creada.
             return factory;
+
         }])
 }());
