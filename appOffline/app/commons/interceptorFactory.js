@@ -4,6 +4,7 @@
  * @createDate          2016.05.09
  * @lastmodifiedDate    2016.05.10
  */
+/*globals angular*/
 (function () {
     'use strict';
     angular

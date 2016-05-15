@@ -4,6 +4,7 @@
  * @createDate          2016.05.09
  * @lastmodifiedDate    2016.05.12
  */
+/*globals angular*/
 (function () {
     'use strict';
     angular
@@ -27,16 +28,20 @@
             // Creacion de la BD.
             dbConfigProvider.dbSet('appOffline', 1);
         }])
-        .run(['dbConfig', 'onlineFactory', '$interval', 'usuariosFactory', function (dbConfig, onlineFactory, $interval, usuariosFactory) {
+        .run(['dbConfig', 'onlineFactory', '$interval', function (dbConfig, onlineFactory, $interval) {
             // Crea la tabla de usurios.
             dbConfig.crearTblUsuario();
 
+            // Verifica la conexión a internet.
             onlineFactory.ckIfOnline();
 
+            /** 
+             * Inicia el checador de conexiones,
+             * este se ejecutara cada 5 segundos.
+             */
             $interval(function () {
                 onlineFactory.ckIfOnline();
             }, 5000);
 
-            usuariosFactory.listaUsuariosWebApi();
         }]);
 }());
