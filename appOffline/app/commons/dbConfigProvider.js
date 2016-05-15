@@ -4,6 +4,7 @@
  * @createDate          2016.05.10
  * @lastmodifiedDate    2016.05.10
  */
+/*globals angular, openDatabase*/
 (function () {
     'use strict';
     angular
@@ -24,7 +25,7 @@
 
             // Configuracion de $websql
             this.$get = function () {
-                var g = {},
+                let g = {},
                     db = openDatabase(provider.nombre, '1.0', provider.nombre, 1024 * 1024 * provider.tamano);
 
                 /**
@@ -40,7 +41,6 @@
                  */
                 g.crearTblUsuario = function () {
                     db.transaction(function (tx) {
-                        //tx.executeSql('drop table usuarios');
                         tx.executeSql('CREATE TABLE IF NOT EXISTS usuarios (id TEXT NOT NULL, nombre TEXT NOT NULL, clave TEXT NOT NULL, departamento TEXT NULL, altaLog TIMESTAMP NOT NULL DEFAULT(CURRENT_TIMESTAMP), modiLog TIMESTAMP NULL)');
                     });
                 };

@@ -4,30 +4,54 @@
  * @createDate          2016.05.09
  * @lastmodifiedDate    2016.05.12
  */
+ /*jshint unused: false, esnext: true*/
+ /*globals angular*/
 (function () {
     'use strict';
     angular
         .module('app')
         .factory('usuariosFactory', ['$rootScope', '$q', '$http', 'dbConfig', 'WEBAPI', function ($rootScope, $q, $http, dbConfig, WEBAPI) {
-
             // Factoria.
             var factory = {};
 
-            // #region Funciones random.
+            factory.existe = function (id) {
+                let defer = $q.defer(); // Promesa.
+
+                // Llamada para ejecutar transacciones en la base de datos web sql.
+                dbConfig
+                    .dbUse()
+                    .transaction(function (tx) {
+                        // Transacción de select.
+                        tx.executeSql("SELECT * FROM usuarios WHERE id=?", [id], function (tx, results) {
+                            // Si no hay resultados, se devolvera false.
+                            if (results.rows.length === 0) {
+                                defer.resolve(false);
+                            }
+                            // En caso contrario sera true.
+                            defer.resolve(true);
+
+                        });
+                    });
+
+                // Retorna la promesa.
+                return defer.promise;
+            };
+
             /**
              * Generacion de id unica.
              * @returns {string} UUID
              */
             factory.generateUUID = function () {
-                var d = new Date().getTime();
-                var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                    var r = (d + Math.random() * 16) % 16 | 0;
-                    d = Math.floor(d / 16);
-                    return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-                });
+                let d = new Date().getTime(),
+                    r,
+                    uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                        r = (d + Math.random() * 16) % 16 | 0;
+                        d = Math.floor(d / 16);
+                        return (c == 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+                    });
                 return uuid;
             };
-
+            
             /**
              * Retorna un entero aleatorio entre min (incluido) y max (excluido).
              * @param   {number} min minimo.
@@ -37,69 +61,76 @@
             factory.getRandomInt = function (min, max) {
                 return Math.floor(Math.random() * (max - min)) + min;
             };
-            // #endregion
 
-            function sleep(milliseconds) {
-                var start = new Date().getTime();
-                for (var i = 0; i < 1e7; i++) {
-                    if ((new Date().getTime() - start) > milliseconds) {
-                        break;
-                    }
-                }
-            }
-
-            // #region Funciones publicas (Datos desde WEBAPI)
+            /**
+             * Obtiene los datos desde el webapi.
+             * @returns {boolean} Indica si ha ejecutado la funcion.
+             */
             factory.listaUsuariosWebApi = function () {
+                let defer = $q.defer(),     // Promesa
+                    insertsUsuarios = [],   // Array de promesas para agregar usuarios.
+                    usuario;                // Control de iteracion en array de usuarios.
+                
+                // Llamada para obtener los datos desde el webapi.
                 $http.get(WEBAPI + 'usuarios')
                     .then(function (res) {
-                        var usuario;
+                        /**
+                         * Se verifica que si responda el webapi y que devuelve un array,
+                         * ya sea que contengo o no objetos.
+                         */
                         if (res.status !== -1 && res.data !== null && Array.isArray(res.data)) {
-                            for(usuario of res.data) {
-                                dbConfig
-                                    .dbUse()
-                                    .transaction(function (tx) {
-                                        tx.executeSql("SELECT id FROM usuarios WHERE id=?", [usuario.id], function (tx, results) {
-                                            if (results.rows.length === 0) {
-                                                console.log('no existe')
-                                                dbConfig.dbUse().transaction(function (tx) {
-                                                    tx.executeSql("INSERT INTO usuarios (id, nombre, clave, departamento) values (?, ?, ?, ?)", [usuario.id, usuario.nombre, usuario.clave, usuario.departamento]);
-                                                });
-                                            } else {
-                                                console.log('existe');
-                                            }
-                                        });
-                                    });
+                            // Realiza el push de las promesas de agregar usuario.
+                            for (usuario of res.data) {
+                                insertsUsuarios.push(factory.agregar(usuario));
                             }
-                        }
-                    });
-            };
 
-            // #endregion
+                            // Ejecuta las promesas.
+                            $q
+                                .all(insertsUsuarios)
+                                .then(function (res) {
+                                    // Si todo se ejecutan correctamente, devuelve true.
+                                    defer.resolve(true);
+                                }, function (res) {
+                                    console.log("Error: ", res);
+                                    defer.resolve(true);
+                                });
+                        }
+                    }, function (tx, error) {
+                        // En caso de error devuelve false y muestra el error en consola.
+                        console.log("Error: " + error.message);
+                        defer.resolve(false);
+                    });
+                
+                // Devuelve la promesa.
+                return defer.promise;
+            };
             
-            // #region Funciones publicas (BD Interna)
             /**
              * Retorna todos los usuarios.
              * @returns {Array} Usuarios.
              */
             factory.listarTodos = function () {
-                let defer = $q.defer();
+                let defer = $q.defer(), // Promesa.
+                    array = [];         // Arrar de datos.
 
-                setTimeout(function () {
-                    dbConfig.dbUse().transaction(function (tx) {
+                // Llamada para ejecutar transacciones en la base de datos web sql.
+                dbConfig
+                    .dbUse()
+                    .transaction(function (tx) {
+                        // Transacción de select.
                         tx.executeSql("SELECT * FROM usuarios", [], function (tx, results) {
-                            let c, array = [];
+                            // Si hay resultados, se insertar en el array.
                             if (results.rows.length > 0) {
-                                for (c in results.rows) {
-                                    array.push(results.rows.item(c));
-                                }
-                                defer.resolve(array);
-                            } else {
-                                defer.resolve([]);
+                                angular.forEach(results.rows, function (value, key) {
+                                    array.push(value);
+                                });
                             }
+                            // Resuelve la promesa.
+                            defer.resolve(array);
                         });
-                    });
                 });
 
+                // Retorna la promesa.
                 return defer.promise;
             };
 
@@ -109,45 +140,93 @@
              * @returns {boolean} Indica si se inserto el dato.
              */
             factory.agregar = function (usuario) {
-                let defer = $q.defer();
+                let defer = $q.defer(); // Promesa. 
 
-                dbConfig.dbUse().transaction(function (tx) {
-                    tx.executeSql("INSERT INTO usuarios (id, nombre, clave, departamento) values (?, ?, ?, ?)", [usuario.id, usuario.nombre, usuario.clave, usuario.departamento],
-                        function (tx, results) {
-                            //console.log("Query Success: ", results);
-                            defer.resolve(true);
-                        },
-                        function (tx, error) {
-                            console.log("Query Error: " + error.message);
-                            defer.resolve(false);
+                // Verifica la existencia del usuario.
+                factory.existe(usuario.id).then(function (res) {
+                    /**
+                     * Verifica la existencia del usuario; si existe lo actualiza,
+                     * en caso contrario lo agrega a la base de datos.
+                     */
+                    if (!res) {
+                        // Llamada para ejecutar transacciones en la base de datos web sql.
+                        dbConfig
+                            .dbUse()
+                            .transaction(function (tx) {
+              
+                                // Transacción para realizar el insert de los datos.
+                                tx.executeSql("INSERT INTO usuarios (id, nombre, clave, departamento) values (?, ?, ?, ?)", [usuario.id, usuario.nombre, usuario.clave, usuario.departamento],
+                                    function (tx, results) {
+                                        defer.resolve(true);
+                                    },
+                                    function (tx, error) {
+                                        // En caso de error devuelve false y muestra el error en consola.
+                                        console.log("Error: " + error.message);
+                                        defer.resolve(false);
+                                    });
+
+                            });
+                    } else {
+                        factory.actualizar(usuario).then(function (res) {
+                            defer.resolve(res);
                         });
+                    }
                 });
 
+                // Retorna la promesa.
                 return defer.promise;
             };
            
+            factory.actualizar = function (usuario) {
+                let defer = $q.defer(); // Promesa.
+
+                // Llamada para ejecutar transacciones en la base de datos web sql.
+                dbConfig
+                    .dbUse()
+                    .transaction(function (tx) {
+                        // Transacción para realizar el insert de los datos.
+                        tx.executeSql("UPDATE usuarios set nombre=?, clave=?, departamento=?, modiLog=? WHERE id=?", [usuario.nombre, usuario.clave, usuario.departamento, usuario.modiLog, usuario.id],
+                            function (tx, results) {
+                                defer.resolve(true);
+                            },
+                            function (tx, error) {
+                                // En caso de error devuelve false y muestra el error en consola.
+                                console.log("Error: " + error.message);
+                                defer.resolve(false);
+                            });
+
+                    });
+
+                // Retorna la promesa.
+                return defer.promise;
+            };
+
             /**
-             * 
+             * Elimina todos los datos de la tabla.
+             * @returns {boolean} Indica si se eliminaron los usuarios.
              */
             factory.eliminarTodos = function(){
-                let defer = $q.defer();
-                
-                dbConfig.dbUse().transaction(function (tx) {
-                    tx.executeSql("DELETE FROM usuarios", [], function (tx, results) {
-                            defer.resolve(true);
-                        },
-                        function (tx, error) {
-                            console.log("Query Error: " + error.message);
-                            defer.resolve(false);
-                        });
-                });
+                let defer = $q.defer(); // Promesa.
 
+                // Llamada para ejecutar transacciones en la base de datos web sql.
+                dbConfig
+                    .dbUse()
+                    .transaction(function (tx) {
+                         tx.executeSql("DELETE FROM usuarios", [], function (tx, results) {
+                             // Transacción para realizar el delete de los datos.
+                             defer.resolve(true);
+                         }, function (tx, error) {
+                             // En caso de error devuelve false y muestra el error en consola.
+                             console.log("Error: " + error.message);
+                             defer.resolve(false);
+                         });
+                    });
+
+                // Retorna la promesa.
                 return defer.promise;
-            }
-            // #endregion
-
+            };
+            
             // Retorna la factoria creada.
             return factory;
-
-        }])
+        }]);
 }());
