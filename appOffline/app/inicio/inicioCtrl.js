@@ -9,7 +9,7 @@
     'use strict';
     angular
         .module('app')
-        .controller('inicioCtrl', ['$scope', '$rootScope', '$q', '$timeout', '$location', 'usuariosFactory', function ($scope, $rootScope, $q, $timeout, $location, usuariosFactory) {
+        .controller('inicioCtrl', ['$scope', '$rootScope', '$q', '$interval', '$location', 'usuariosFactory', function ($scope, $rootScope, $q, $interval, $location, usuariosFactory) {
             // #region VARIABLES
             moment.locale('es');                // Moment en español.
             $scope.IP = $location.host();       // IP del server.
@@ -17,6 +17,8 @@
             $scope.usersL = 0;                  // Tamaño de la lista.
             $scope.online = $rootScope.online;  // Indica si se encuentra online.
             $scope.webapi = $rootScope.webapi;  // Indica si se encuentra online el webapi.
+
+            $scope.modificar = {};
 
             // Objeto usuario.
             $scope.usuario = {
@@ -35,10 +37,19 @@
              */
             function getUsers() {
                 usuariosFactory.listarTodos().then(function (res) {
-                    console.log(res);
                     $scope.usuarios = res;
                 });
             }
+
+            function datosFromWebApi() {
+                usuariosFactory
+                    .listaUsuariosWebApi()
+                    .then(function (res) {
+                        if (res) {
+                            getUsers();
+                        }
+                    });
+            };
             // #endregion
 
             // #region INICIALIZACION
@@ -49,20 +60,32 @@
             });
 
             $rootScope.$watch('webapi', function (newValue, oldValue) {
-                console.log('watch webapi');
                 if (newValue !== oldValue) {
                     $scope.webapi = $rootScope.webapi;
                 }
             });
 
-            usuariosFactory
-                .listaUsuariosWebApi()
-                .then(function (res) {
-                    if (res){
-                        getUsers();
-                    }
-                });
+            // Obtiene los datos desde el webapi y los locales.
+            if ($rootScope.webapi) {
+                datosFromWebApi();
+            } else {
+                getUsers();
+            }
             // #endregion
+
+            /*
+            * Intervalo para actualizar los datos locales con datos del webapi.
+            * Tambien para agrega datos locales masivamente al webapi.
+            */
+            $interval(function () {
+                if ($rootScope.webapi) {
+                    usuariosFactory
+                        .agregacionMasiva()
+                        .then(function () {
+                            datosFromWebApi();
+                        });
+                }
+            }, 5000);
 
             // #region CONTROLES
             /**
@@ -84,7 +107,7 @@
                                 clave: '',
                                 departamento: '',
                                 sync: false,
-                                altaLog: moment()
+                                altaLog: moment().format()
                             };
                         });
                 } else {
@@ -104,6 +127,27 @@
                         }
                     });
             };
+
+            $scope.btnModificarUsuario = function (usuario) {
+                $scope.editar = usuario;
+            };
+
+            $scope.modalEditar = {
+                guardarCambios: function () {
+                    $scope.editar.sync = false;
+                    $scope.editar.modiLog = moment().format();
+                    usuariosFactory
+                        .actualizar($scope.editar)
+                        .then(function () {
+                            $scope.editar = {};
+                            Materialize.toast('Se han guardado los cambios!', 5000);
+                        });
+                },
+                cancelarCambios: function () {
+                    $scope.editar = {};
+                    Materialize.toast('Se han cancelado los cambios!', 5000);
+                }
+            }
             // #endregion
         }]);
 }());

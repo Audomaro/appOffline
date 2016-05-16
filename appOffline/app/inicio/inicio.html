@@ -45,6 +45,7 @@
             <th data-field="departamento">Departamento</th>
             <th data-field="altaLog">Alta</th>
             <th data-field="modiLog">Modificación</th>
+            <th data-field="sync">Sincronizado</th>
         </tr>
     </thead>
 
@@ -55,27 +56,39 @@
             <td>{{ u.departamento }}</td>
             <td>{{ u.altaLog }}</td>
             <td>{{ u.modiLog }}</td>
+            <td>{{ u.sync }}</td>
             <td>
-                <a style="margin: 0; padding: 2px; height: 18px; line-height: 15px;" class="waves-effect  blue darken-1 btn">Editar</a>
+                <a href="#modal1" style="margin: 0; padding: 2px; height: 18px; line-height: 15px;" class="waves-effect  blue darken-1 btn" modal ng-click="btnModificarUsuario(u)">Editar</a>
             </td>
         </tr>
-       
+
     </tbody>
 </table>
 
-<!--<ul class="collection with-header">
-    <li class="collection-header"><h4>Usuarios</h4></li>
-    <li class="collection-item" ng-repeat="u in usuarios">
+<!-- Modal Structure -->
+<div id="modal1" class="modal">
+    <div class="modal-content">
         <div class="row">
-            <div class="col s4">
-                <i class="material-icons left">account_circle</i> {{ u.nombre }}
-            </div>
-            <div class="col s4">
-                <i class="material-icons left">vpn_key</i> {{ u.clave }}
-            </div>
-            <div class="col s4">
-                <i class="material-icons left">supervisor_account</i> {{ u.departamento }}
-            </div>
+            <form class="col s12">
+                <div input-field class="col s4">
+                    <input type="text" ng-model="editar.nombre" length="50">
+                    <label>Nombre</label>
+                </div>
+
+                <div input-field class="col s4">
+                    <input type="text" ng-model="editar.clave" length="50">
+                    <label>Clave</label>
+                </div>
+
+                <div input-field class="col s4">
+                    <input type="text" ng-model="editar.departamento" length="50">
+                    <label>Departamento</label>
+                </div>
+            </form>
         </div>
-    </li>
-</ul>-->
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat" ng-click="modalEditar.guardarCambios()">Guardar</a>
+        <a href="#!" class="modal-action modal-close waves-effect waves-red btn-flat" ng-click="modalEditar.cancelarCambios()">Cancelar</a>
+    </div>
+</div>

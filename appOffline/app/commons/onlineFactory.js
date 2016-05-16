@@ -9,10 +9,11 @@
     'use strict';
     angular
         .module('app')
-        .factory('onlineFactory', ['$rootScope', '$q', '$http', 'WEBAPI', function ($rootScope, $q, $http, WEBAPI) {
-            // var httpLoc = 'http://127.0.0.1/appOffline/favicon.ico', // Url para verificar la conexión. Producción.
-            var httpLoc = 'http://localhost:63722/favicon.ico',         // Url para verificar la conexión. QA, DEV.
-                factory = {};                                           // Factoria.
+        .factory('onlineFactory', ['$rootScope', '$q', '$http', 'WEBAPI', 'WEB', function ($rootScope, $q, $http, WEBAPI, WEB) {
+            var httpLoc = WEB + '/favicon.ico', // Url para verificar la conexión. QA, DEV.
+                factory = {};                   // Factoria.
+            $rootScope.online = false;          // Estado de la conexión.
+            $rootScope.webapi = false;          // Estado del webapi.
 
             /**
              * Verifica la conexión a internet.

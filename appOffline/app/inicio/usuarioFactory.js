@@ -12,8 +12,7 @@
         .module('app')
         .factory('usuariosFactory', ['$rootScope', '$q', '$http', 'dbConfig', 'WEBAPI', 'onlineFactory', function ($rootScope, $q, $http, dbConfig, WEBAPI, onlineFactory) {
             // Factoria.
-            var factory = {},
-                allOnline = $rootScope.online && $rootScope.webapi;
+            var factory = {};
 
             // #region FUNCIONES INTERNAS
             /**
@@ -42,6 +41,31 @@
             };
 
             /**
+             * Indica si los datos del usuario estan sincronizados
+             * con el webapi.
+             * @param   {string} id Id del usuario.
+             * @returns {object} promesa.
+             */
+            function desincronizar(id) {
+                let defer = $q.defer(); // Promesa.
+
+                // Llamada para ejecutar transacciones en la base de datos web sql.
+                dbConfig
+                    .dbUse()
+                    .transaction(function (tx) {
+                        // Transacción para realizar el insert de los datos.
+                        tx.executeSql("UPDATE usuarios set sync=? WHERE ID=?", [false, id]);
+                        defer.resolve(true);
+                    }, function (tx, error) {
+                        console.log('Error: ', error.message);
+                        defer.resolve(false);
+                    });
+
+                // Retorna la promesa.
+                return defer.promise;
+            };
+
+            /**
              * Agrega el usuario que se guardo en la base de
              * datos local al web api.
              * @param   {object} usuario Datos del usuario.
@@ -50,7 +74,7 @@
             function agregarWebApi(usuario) {
                 let defer = $q.defer(); // Promesa. 
 
-                if (allOnline) {
+                if ($rootScope.online && $rootScope.webapi) {
                     $http
                         .post(WEBAPI + 'usuarios', usuario)
                         .then(function (res) {
@@ -70,20 +94,17 @@
              * @param   {object} usuario Datos del uuario.
              * @returns {object} Promesa.
              */
-            function actualizarWebApi (usuario) {
+            function actualizarWebApi(usuario) {
                 let defer = $q.defer() // Promesa.
-                
-                if (allOnline) {
+                if ($rootScope.online && $rootScope.webapi && !usuario.sync) {
                     $http
-                        .put(WEBAPI + 'usuarios', {
-                            id: usuario.id,
-                            usuarios: usuario
-                        })
+                        .put(WEBAPI + 'usuarios', usuario)
                         .then(function (res) {
                             if (res.status === res) {
-                                sincronizar.then(function (res) {
-                                    defer.resolve(res);
-                                });
+                                sincronizar
+                                    .then(function (res) {
+                                        defer.resolve(res);
+                                    });
                             } else {
                                 defer.resolve(false);
                             }
@@ -96,9 +117,9 @@
                 }
                 return defer.promise;
             };
-
             // #endregion
 
+            // #region FUNCIONES DE LA FACTORIA
             /**
              * Verifica la existencia del usuarios en la base de datos
              * local, en caso de no exister se agrega y por el contrario
@@ -163,7 +184,7 @@
                     insertsUsuarios = [],   // Array de promesas para agregar usuarios.
                     usuario;                // Control de iteracion en array de usuarios.
 
-                if (allOnline) {
+                if ($rootScope.online && $rootScope.webapi) {
                     // Llamada para obtener los datos desde el webapi.
                     $http
                         .get(WEBAPI + 'usuarios')
@@ -190,9 +211,9 @@
                                         defer.resolve(true);
                                     });
                             }
-                        }, function (tx, error) {
+                        }, function (res) {
                             // En caso de error devuelve false y muestra el error en consola.
-                            console.log("Error: " + error.message);
+                            console.log("Error: " + res.status);
                             defer.resolve(false);
                         });
                 } else {
@@ -240,46 +261,50 @@
                 let defer = $q.defer(); // Promesa. 
 
                 // Verifica la existencia del usuario.
-                factory.existe(usuario.id).then(function (res) {
-                    /**
-                     * Verifica la existencia del usuario; si existe lo actualiza,
-                     * en caso contrario lo agrega a la base de datos.
-                     */
-                    if (!res) {
-                        // Llamada para ejecutar transacciones en la base de datos web sql.
-                        dbConfig
-                            .dbUse()
-                            .transaction(function (tx) {
-
-                                // Transacción para realizar el insert de los datos.
-                                tx.executeSql("INSERT INTO usuarios (id, nombre, clave, departamento, altaLog, sync) values (?, ?, ?, ?, ?, ?)", [usuario.id, usuario.nombre, usuario.clave, usuario.departamento, usuario.altaLog, usuario.sync],
-                                    function (tx, results) {
-                                        console.log(onlineFactory.ckIfOnline());
-                                        if (!usuario.sync) {
-                                            agregarWebApi(usuario)
-                                                .then(function (res) {
-                                                    sincronizar(usuario.id)
-                                                        .then(function (res) {
-                                                            defer.resolve(true);
-                                                        });
-                                                });
-                                        } else {
+                factory.existe(usuario.id)
+                    .then(function (res) {
+                        /**
+                         * Verifica la existencia del usuario; si existe lo actualiza,
+                         * en caso contrario lo agrega a la base de datos.
+                         */
+                        if (!res) {
+                            // Llamada para ejecutar transacciones en la base de datos web sql.
+                            dbConfig
+                                .dbUse()
+                                .transaction(function (tx) {
+                                    // Transacción para realizar el insert de los datos.
+                                    tx.executeSql("INSERT INTO usuarios (id, nombre, clave, departamento, altaLog, modiLog, sync) values (?, ?, ?, ?, ?, ?, ?)", [usuario.id, usuario.nombre, usuario.clave, usuario.departamento, moment(usuario.altaLog, moment.ISO_8601).format(''), typeof(usuario.modiLog) !== 'undefined' && usuario.modiLog !== null ? moment(usuario.modiLog, moment.ISO_8601).format('') : null, usuario.sync],
+                                        function (tx, results) {
+                                            // Intenta agregar los datos al webapi.
+                                            if ($rootScope.online && $rootScope.webapi && !usuario.sync && usuario.modiLog === null) {
+                                                agregarWebApi(usuario)
+                                                    .then(function (res) {
+                                                        // Si se agrega correctamente al webapi, cambia a true la bandera sync.
+                                                        sincronizar(usuario.id)
+                                                            .then(function (res) {
+                                                                defer.resolve(true);
+                                                            });
+                                                    });
+                                            } else {
+                                                // Si no lo puede sincronizar, la deja el false y resuelve la promesa.
+                                                defer.resolve(true);
+                                            }
+                                        },
+                                        function (tx, error) {
+                                            // En caso de error devuelve false y muestra el error en consola.
+                                            console.log("Error: " + error.message);
                                             defer.resolve(true);
-                                        }
-                                    },
-                                    function (tx, error) {
-                                        // En caso de error devuelve false y muestra el error en consola.
-                                        console.log("Error: " + error.message);
-                                        defer.resolve(false);
-                                    });
-                            });
-                    } else {
-                        factory.actualizar(usuario)
-                            .then(function (res) {
-                                defer.resolve(res);
-                            });
-                    }
-                });
+                                        });
+                                });
+                        } else {
+                            usuario.sync = true;
+                            factory
+                                .actualizar(usuario)
+                                .then(function (res) {
+                                    defer.resolve(res);
+                                });
+                        }
+                    });
 
                 // Retorna la promesa.
                 return defer.promise;
@@ -292,15 +317,21 @@
              */
             factory.actualizar = function (usuario) {
                 let defer = $q.defer(); // Promesa.
-
                 // Llamada para ejecutar transacciones en la base de datos web sql.
                 dbConfig
                     .dbUse()
                     .transaction(function (tx) {
                         // Transacción para realizar el insert de los datos.
-                        tx.executeSql("UPDATE usuarios set nombre=?, clave=?, departamento=?, modiLog=? WHERE id=?", [usuario.nombre, usuario.clave, usuario.departamento, usuario.modiLog, usuario.id],
+                        tx.executeSql("UPDATE usuarios set nombre=?, clave=?, departamento=?, modiLog=?, sync=? WHERE id=?", [usuario.nombre, usuario.clave, usuario.departamento, usuario.modiLog, usuario.sync, usuario.id],
                             function (tx, results) {
-                                defer.resolve(true);
+                                if (!usuario.sync) {
+                                    actualizarWebApi(usuario)
+                                        .then(function (res) {
+                                            defer.resolve(true);
+                                        });
+                                } else {
+                                    defer.resolve(true);
+                                }
                             },
                             function (tx, error) {
                                 // En caso de error devuelve false y muestra el error en consola.
@@ -338,6 +369,39 @@
                 // Retorna la promesa.
                 return defer.promise;
             };
+            // #endregion
+
+            factory.agregacionMasiva = function () {
+                let defer = $q.defer(), // Promesa.
+                    arrayPost = [];     // Arrar de agregar al api.
+
+                // Llamada para ejecutar transacciones en la base de datos web sql.
+                dbConfig
+                    .dbUse()
+                    .transaction(function (tx) {
+                        // Transacción de select.
+                        tx.executeSql("SELECT * FROM usuarios WHERE sync=?", [false], function (tx, results) {
+                            // Si hay resultados, se insertar en el array.
+                            if (results.rows.length > 0) {
+                                angular.forEach(results.rows, function (value, key) {
+                                    arrayPost.push(agregarWebApi(value));
+                                });
+
+                                $q
+                                    .all(arrayPost)
+                                    .then(function (res) {
+                                        defer.resolve(true);
+                                    });
+                            } else {
+                                // Resuelve la promesa.
+                                defer.resolve(true);
+                            }
+                        });
+                    });
+
+                // Retorna la promesa.
+                return defer.promise;
+            }
 
             // Retorna la factoria creada.
             return factory;

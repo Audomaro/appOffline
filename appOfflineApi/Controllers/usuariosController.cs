@@ -37,19 +37,19 @@ namespace appOfflineApi.Controllers
             return Ok(usuarios);
         }
 
-        // PUT: api/usuarios/5
+        // PUT: api/usuarios/
         [ResponseType(typeof(void))]
-        public IHttpActionResult Putusuarios(string id, usuarios usuarios)
+        public IHttpActionResult Putusuarios(usuarios usuarios)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (id != usuarios.id)
-            {
-                return BadRequest();
-            }
+            //if (id != usuarios.id)
+            //{
+            //    return BadRequest();
+            //}
 
             db.Entry(usuarios).State = EntityState.Modified;
 
@@ -59,7 +59,7 @@ namespace appOfflineApi.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!usuariosExists(id))
+                if (!usuariosExists(usuarios.id))
                 {
                     return NotFound();
                 }
@@ -76,6 +76,13 @@ namespace appOfflineApi.Controllers
         [ResponseType(typeof(usuarios))]
         public IHttpActionResult Postusuarios(usuarios usuarios)
         {
+
+            if (usuariosExists(usuarios.id))
+            {
+                Putusuarios(usuarios);
+                return CreatedAtRoute("DefaultApi", new { id = usuarios.id }, usuarios);
+            }
+
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
