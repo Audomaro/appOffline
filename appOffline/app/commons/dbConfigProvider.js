@@ -40,37 +40,9 @@
                  * Crea la tabla de usuarios.
                  */
                 g.crearTblUsuario = function () {
-<<<<<<< HEAD
-                    db.createTable('usuarios', {
-                        "id": {
-                            "type": "TEXT",
-                            "null": "NOT NULL",
-                            "primary": true
-                        },
-                        "nombre": {
-                            "type": "TEXT",
-                            "null": "NOT NULL"
-                        },
-                        "clave": {
-                            "type": "TEXT",
-                            "null": "NOT NULL"
-                        },
-                        "departamento": {
-                            "type": "TEXT"
-                        },
-                        "altaLog": {
-                            "type": "TIMESTAMP",
-                            "null": "NOT NULL",
-                            "default": "CURRENT_TIMESTAMP"
-                        },
-                        "modiLog": {
-                            "type": "TIMESTAMP",
-                            "null": ""
-                        }
-=======
                     db.transaction(function (tx) {
-                        tx.executeSql('CREATE TABLE IF NOT EXISTS usuarios (id TEXT NOT NULL, nombre TEXT NOT NULL, clave TEXT NOT NULL, departamento TEXT NULL, altaLog TIMESTAMP NOT NULL DEFAULT(CURRENT_TIMESTAMP), modiLog TIMESTAMP NULL)');
->>>>>>> prueba
+                        //tx.executeSql('DROP table usuarios');
+                        tx.executeSql('CREATE TABLE IF NOT EXISTS usuarios (id TEXT NOT NULL, nombre TEXT NOT NULL, clave TEXT NOT NULL, departamento TEXT NULL, altaLog TIMESTAMP NOT NULL DEFAULT(CURRENT_TIMESTAMP), modiLog TIMESTAMP NULL, sync BOOLEAN default false)');
                     });
                 };
 

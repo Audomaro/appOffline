@@ -7,6 +7,13 @@
     {{ online ? 'SERVER: ' + IP : 'Modo: Offline' }}
 </a>
 
+<a href="#" class="waves-effect waves-light btn grey darken-4">
+    <i class="material-icons left" ng-class="webapi ? 'light-green-text text-accent-4' : 'red-text text-accent-4'">
+        cloud
+    </i>
+    WEBAPI
+</a>
+
 <div class="row">
     <form class="col s12">
         <div input-field class="col s4">
@@ -30,7 +37,7 @@
     <a href="#" ng-click="btnAgregarUsuario()" class="waves-effect waves-light btn light-green darken-4"><i class="material-icons left">add_circle_outline</i>Agregar usuario</a>
 </div>
 
-<table>
+<table class="highlight responsive-table">
     <thead>
         <tr>
             <th data-field="nombre">Nombre</th>
@@ -48,13 +55,8 @@
             <td>{{ u.departamento }}</td>
             <td>{{ u.altaLog }}</td>
             <td>{{ u.modiLog }}</td>
-<<<<<<< HEAD
-            <td style="padding: 0">
-                <a class="waves-effect btn light-blue"><i class="material-icons ">mode_edit</i></a>
-=======
             <td>
-                <a style="cursor: pointer;">Editar</a>
->>>>>>> prueba
+                <a style="margin: 0; padding: 2px; height: 18px; line-height: 15px;" class="waves-effect  blue darken-1 btn">Editar</a>
             </td>
         </tr>
        

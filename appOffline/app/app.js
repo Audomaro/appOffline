@@ -12,7 +12,7 @@
         .constant('WEBAPI', 'http://localhost:56517/api/')
         .config(['$httpProvider', '$stateProvider', '$urlRouterProvider', 'dbConfigProvider', function ($httpProvider, $stateProvider, $urlRouterProvider, dbConfigProvider) {
             // Agrega el interceptor de peticiones a la aplicación.
-            $httpProvider.interceptors.push('interceptorFactory');
+            //$httpProvider.interceptors.push('interceptorFactory');
 
             // Ruta default.
             $urlRouterProvider.otherwise('/');

@@ -9,16 +9,37 @@
     'use strict';
     angular
         .module('app')
-        .factory('onlineFactory', ['$q', '$http', function ($q, $http) {
+        .factory('onlineFactory', ['$rootScope', '$q', '$http', 'WEBAPI', function ($rootScope, $q, $http, WEBAPI) {
             // var httpLoc = 'http://127.0.0.1/appOffline/favicon.ico', // Url para verificar la conexión. Producción.
             var httpLoc = 'http://localhost:63722/favicon.ico',         // Url para verificar la conexión. QA, DEV.
                 factory = {};                                           // Factoria.
 
             /**
              * Verifica la conexión a internet.
+             * Actualiza el estado online de la página
+             * y del webapi.
              */
             factory.ckIfOnline = function () {
-                $http.head(httpLoc + '?_=' + Math.floor(1e9 * Math.random()));
+                // Verifica estado online de la página.
+                $http
+                    .head(httpLoc + '?_=' + Math.floor(1e9 * Math.random()))
+                    .success(function () {
+                        $rootScope.online = true;
+                    })
+                    .error(function () {
+                        $rootScope.online = false;
+                    });
+
+                // Verifica el estado online de webapi.
+                $http
+                    .get(WEBAPI + 'usuarios')
+                    .success(function () {
+                        $rootScope.webapi = true;
+                    })
+                    .error(function () {
+                        $rootScope.webapi = false;
+                    });
+
             };
 
             // Retorna la factoria creada.

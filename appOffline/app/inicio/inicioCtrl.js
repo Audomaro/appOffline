@@ -11,17 +11,21 @@
         .module('app')
         .controller('inicioCtrl', ['$scope', '$rootScope', '$q', '$timeout', '$location', 'usuariosFactory', function ($scope, $rootScope, $q, $timeout, $location, usuariosFactory) {
             // #region VARIABLES
+            moment.locale('es');                // Moment en español.
             $scope.IP = $location.host();       // IP del server.
             $scope.usuarios = [];               // Lista de usuarios.
             $scope.usersL = 0;                  // Tamaño de la lista.
             $scope.online = $rootScope.online;  // Indica si se encuentra online.
+            $scope.webapi = $rootScope.webapi;  // Indica si se encuentra online el webapi.
 
             // Objeto usuario.
             $scope.usuario = {
                 id: '',
                 nombre: '',
                 clave: '',
-                departamento: ''
+                departamento: '',
+                sync: false,
+                altaLog: moment()
             };
             // #endregion
 
@@ -30,25 +34,10 @@
              * Obtiene la lista completa de todos los usuarios.
              */
             function getUsers() {
-<<<<<<< HEAD
-                $timeout(function () {
-                    usuariosFactory
-                    .listarTodos()
-                    .then(function (results) {
-                        var i;
-                        $scope.usuarios = [];
-                        for (i = 0; i < results.rows.length; i++) {
-                            $scope.usuarios.push(results.rows.item(i));
-                        }
-                        $scope.usersL = $scope.usuarios.length;
-                    });
-                }, 100)
-=======
                 usuariosFactory.listarTodos().then(function (res) {
                     console.log(res);
                     $scope.usuarios = res;
                 });
->>>>>>> prueba
             }
             // #endregion
 
@@ -56,6 +45,13 @@
             $rootScope.$watch('online', function (newValue, oldValue) {
                 if (newValue !== oldValue) {
                     $scope.online = $rootScope.online;
+                }
+            });
+
+            $rootScope.$watch('webapi', function (newValue, oldValue) {
+                console.log('watch webapi');
+                if (newValue !== oldValue) {
+                    $scope.webapi = $rootScope.webapi;
                 }
             });
 
@@ -86,7 +82,9 @@
                                 id: '',
                                 nombre: '',
                                 clave: '',
-                                departamento: ''
+                                departamento: '',
+                                sync: false,
+                                altaLog: moment()
                             };
                         });
                 } else {
