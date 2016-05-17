@@ -51,11 +51,17 @@ namespace appOfflineApi.Controllers
             //    return BadRequest();
             //}
 
-            db.Entry(usuarios).State = EntityState.Modified;
+            usuarios u = db.usuarios.Find(usuarios.id);
+            
 
             try
             {
-                db.SaveChanges();
+                if (u.modiLog == null || DateTime.Compare((DateTime)usuarios.modiLog, (DateTime)u.modiLog) > 1)
+                {
+                    db.Entry(usuarios).State = EntityState.Modified;
+                    db.SaveChanges();
+
+                }
             }
             catch (DbUpdateConcurrencyException)
             {

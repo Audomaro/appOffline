@@ -41,7 +41,7 @@
                  */
                 g.crearTblUsuario = function () {
                     db.transaction(function (tx) {
-                        // tx.executeSql('DROP table usuarios');
+                        tx.executeSql('DROP table usuarios');
                         tx.executeSql('CREATE TABLE IF NOT EXISTS usuarios (id TEXT NOT NULL, nombre TEXT NOT NULL, clave TEXT NOT NULL, departamento TEXT NULL, altaLog TIMESTAMP NOT NULL DEFAULT(CURRENT_TIMESTAMP), modiLog TIMESTAMP NULL, sync BOOLEAN default false)');
                     });
                 };

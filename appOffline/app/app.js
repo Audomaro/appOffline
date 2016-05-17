@@ -9,9 +9,8 @@
     'use strict';
     angular
         .module('app', ['ui.router', 'ui.materialize', 'angular-websql'])
-        .constant('WEB', 'http://192.168.1.124/appOffline/') // WEB
+        .constant('WEB', 'http://127.0.0.1/appOffline/') // WEB
         .constant('WEBAPI', 'http://localhost:56517/api/') // WEB
-        //.constant('WEBAPI', 'http://192.168.1.124/appOfflineApi/api/') // WEB
         .config(['$httpProvider', '$stateProvider', '$urlRouterProvider', 'dbConfigProvider', function ($httpProvider, $stateProvider, $urlRouterProvider, dbConfigProvider) {
             // Agrega el interceptor de peticiones a la aplicación.
             //$httpProvider.interceptors.push('interceptorFactory');

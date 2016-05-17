@@ -10,7 +10,7 @@
     angular
         .module('app')
         .factory('onlineFactory', ['$rootScope', '$q', '$http', 'WEBAPI', 'WEB', function ($rootScope, $q, $http, WEBAPI, WEB) {
-            var httpLoc = WEB + '/favicon.ico', // Url para verificar la conexión. QA, DEV.
+            var httpLoc = WEB + 'favicon.ico', // Url para verificar la conexión. QA, DEV.
                 factory = {};                   // Factoria.
             $rootScope.online = false;          // Estado de la conexión.
             $rootScope.webapi = false;          // Estado del webapi.
